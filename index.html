@@ -32,6 +32,9 @@
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			document.body.appendChild( renderer.domElement );
 
+			<!-- CASTER --!>
+			var caster = new THREE.Raycaster();
+
 			//add lights
 			var light = new THREE.PointLight(0xffffff, 1, 50);
 			light.position.set(-10, 10, 10);
@@ -163,8 +166,6 @@
 					pipeTop.position.z = pipeTopStart.z;
 				}
 				else pipeTop.position.z += pipeMovementSpeed; // move pipe towards camera
-
-
 				
 				if( keyboard.pressed("space") ){
 					birdVelocity=jumpStrength;
@@ -194,6 +195,17 @@
 				camera.position.y = bird.position.y;
 
 				renderer.render(scene, camera);
+
+				<!-- CHECK COLLISION --!>
+				caster.set(bird.position, new THREE.Vector3(bird.position.x, bird.position.y, bird.position.z));
+
+				// Maximum distance from the origin before we consider collision
+        		var distance = 30; // 64 originally
+				var obstacles = [pipeTop, pipeBot];
+				var collisions= caster.intersectObjects( obstacles );
+
+				if(collisions.length > 0)
+					alert(collisions[0].distance);
 			};
 
 			render();
