@@ -14,12 +14,50 @@
 		<script src="js/DDSLoader.js"></script>
 		<script src="js/TGALoader.js"></script>
 		<script src="js/threex.daynight.js"></script>
+
+		<script id="vs" type="x-shader/x-vertex">
+
+			varying vec2 vUv;
+
+			void main() {
+
+				vUv = uv;
+				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+
+			}
+
+		</script>
+
+		<script id="fs" type="x-shader/x-fragment">
+
+			uniform sampler2D map;
+
+			uniform vec3 fogColor;
+			uniform float fogNear;
+			uniform float fogFar;
+
+			varying vec2 vUv;
+
+			void main() {
+
+				float depth = gl_FragCoord.z / gl_FragCoord.w;
+				float fogFactor = smoothstep( fogNear, fogFar, depth );
+
+				gl_FragColor = texture2D( map, vUv );
+				gl_FragColor.w *= pow( gl_FragCoord.z, 20.0 );
+				gl_FragColor = mix( gl_FragColor, vec4( fogColor, gl_FragColor.w ), fogFactor );
+
+			}
+
+		</script>
+
+
 		<script>
 
 			<!-- GLOBAL VARS --!>
 			var depth = -90;
 			var pipeBotStart = new THREE.Vector3( 0, -30, depth); // -15 previously
-			var pipeTopStart = new THREE.Vector3( 0, 70, depth);
+			var pipeTopStart = new THREE.Vector3( 0, 30, depth);
 			var pipeMovementSpeed = 0.5; // originally 0.6
 			var pipeGap = 13; // 7.5 //the lower the bigger (3.5 was gud)
 			var birdStart = new THREE.Vector3( 0, 0, 0);
@@ -50,7 +88,7 @@
 			camera.position.z = 5;
 
 			<!-- RENDERER --!>
-			var renderer = new THREE.WebGLRenderer();
+			var renderer = new THREE.WebGLRenderer( { antialias: false } );
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			document.body.appendChild( renderer.domElement );
 
@@ -275,7 +313,7 @@
 			var boxMaterial = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
 			var cubeForReference = new THREE.Mesh( boxGeometry, boxMaterial );
 			cubeForReference.position.z= -5;
-			cubeForReference.position.x= -3;
+			cubeForReference.position.y= pipeTopStart.y;
 			scene.add( cubeForReference );
             
 			<!-- LISTENER --!>
@@ -292,6 +330,12 @@
 			var deltaTime;
 			var particleSystem = createParticleSystem();
     		scene.add(particleSystem);
+
+    		var cloudSystem = createCloudSystem();
+    		scene.add(cloudSystem);
+    		cloudSystem = createCloudSystem();
+    		cloudSystem.position.z = -8000;
+			scene.add( cloudSystem );
 
 			function createParticleSystem() {
 			    var particleCount = 200;
@@ -320,6 +364,84 @@
 				  // create the particle system
 				  particleSystem = new THREE.Points(particles, particleMaterial);
 				  return particleSystem;
+			}
+
+			function createCloudSystem() {
+				var geometry = new THREE.Geometry();
+
+				var texture = THREE.ImageUtils.loadTexture( 'textures/cloud10.png' );
+				texture.magFilter = THREE.LinearMipMapLinearFilter;
+				texture.minFilter = THREE.LinearMipMapLinearFilter;
+
+				var fog = new THREE.Fog( 0x4584b4, pipeBotStart.z, 1000 );
+
+				material = new THREE.ShaderMaterial( {
+
+					uniforms: {
+
+						"map": { type: "t", value: texture },
+						"fogColor" : { type: "c", value: fog.color },
+						"fogNear" : { type: "f", value: fog.near },
+						"fogFar" : { type: "f", value: fog.far },
+
+					},
+					vertexShader: document.getElementById( 'vs' ).textContent,
+					fragmentShader: document.getElementById( 'fs' ).textContent,
+					depthWrite: false,
+					depthTest: false,
+					transparent: true
+
+				} );
+
+				var plane = new THREE.Mesh( new THREE.PlaneGeometry( 64, 64 ) );
+
+				var numOfClouds=8000;
+				for ( var i = pipeBotStart.z-4000; i < camera.position.z-20; i++ ) {
+
+					// plane.position.x = Math.random() * 1000 - 500;
+					plane.position.x = Math.floor(Math.random() * (treeRange.x*4 - (-treeRange.x*4) + 1) + (-treeRange.x*4));
+					// plane.position.x = 0;
+					plane.position.y = pipeTopStart.y;
+					plane.position.z = i;
+					plane.rotation.z = Math.random() * Math.PI;
+					plane.scale.x = plane.scale.y = Math.random() * Math.random() * 0.5 + 0.5;
+					// plane.scale.x = plane.scale.y = 1;
+
+					// THREE.GeometryUtils.merge( geometry, plane );
+
+					plane.updateMatrix();
+					geometry.merge( plane.geometry, plane.matrix);
+
+
+				}
+				mesh = new THREE.Mesh( geometry, material );
+				// mesh.rotation.x = -25*0.0174532925;
+				// scene.add( mesh );
+				return mesh;
+
+				// mesh = new THREE.Mesh( geometry, material );
+				// mesh.position.z = - 8000;
+				// scene.add( mesh );
+			}
+
+			function animateCloudSystem() {
+			  // var verts = cloudSystem.geometry.vertices;
+			  // for(var i = 0; i < verts.length; i++) {
+			  //   var vert = verts[i];
+			  //   if (vert.z > camera.position.z+10) {
+			  //     vert.z = Math.random() * pipeBotStart.z - camera.position.z;
+			  //   }
+			  //   vert.z = vert.z + ((pipeMovementSpeed * (pipeMovementSpeed*100/2)) * deltaTime);
+			  // }
+			  // cloudSystem.geometry.verticesNeedUpdate = true;
+			  // var geometry = cloudSystem.geometry;
+			  // for( var i = 0; i < geometry.vertices.length; i++ )
+			  //   {
+			  //       geometry.vertices[i].add(geometry.vertices[i].velocity*deltaTime);
+			  //       if (geometry.vertices[i].z > 650) geometry.vertices[i].z = 0;
+			  //   }
+			    
+			  //   geometry.verticesNeedUpdate = true;
 			}
 
 			function animateParticles() {
@@ -391,6 +513,7 @@
 					}
 				}
 				animateParticles();
+				animateCloudSystem();
 			}
 
 			function applyGamePhysics(){
