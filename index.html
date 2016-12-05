@@ -19,9 +19,9 @@
 			<!-- GLOBAL VARS --!>
 			var depth = -90;
 			var pipeBotStart = new THREE.Vector3( 0, -30, depth); // -15 previously
-			var pipeTopStart = new THREE.Vector3( 0, 70, depth);
+			var pipeTopStart = new THREE.Vector3( 0, 50, depth);
 			var pipeMovementSpeed = 0.5; // originally 0.6
-			var pipeGap = 13; // 7.5 //the lower the bigger (3.5 was gud)
+			var pipeGap = 10; // 7.5 //the lower the bigger (3.5 was gud)
 			var birdStart = new THREE.Vector3( 0, 0, 0);
 		    var treeRange = new THREE.Vector3( 100, pipeBotStart.y, pipeBotStart.z);
 			var loadingTime = 5;
@@ -86,30 +86,6 @@
 			
 			var skydom	= new THREEx.DayNight.Skydom()
 			scene.add( skydom.object3d )
-
-
-
-			//add lights
-			// var light = new THREE.AmbientLight(0xffffff);
-   //  		scene.add(light);
-			var light = new THREE.PointLight(0xffffff, 1, 50);
-			light.position.set(-20, 5, 0);
-			scene.add(light);
-			var light2 = new THREE.PointLight( 0xffffff, 1, 50 ); // color, intensity, distance
-			light2.position.set( 20, 15, 0 );
-			scene.add(light2);
-			var light3 = new THREE.PointLight( 0xffffff, 1, 50 ); // color, intensity, distance
-			light3.position.set( -20, 25, 0 );
-			scene.add(light3);
-			var light4 = new THREE.PointLight(0xffffff, 1, 50);
-			light4.position.set(20, -5, 0);
-			scene.add(light4);
-			var light5 = new THREE.PointLight( 0xffffff, 1, 50 ); // color, intensity, distance
-			light5.position.set( -20, -15, 0 );
-			scene.add(light5);
-			var light6 = new THREE.PointLight( 0xffffff, 1, 50 ); // color, intensity, distance
-			light6.position.set( 20, -25, 0 );
-			scene.add(light6);
 
 			/* Floor  */    
 			var geometry = new THREE.PlaneGeometry( 600, 200, 1, 1 );
@@ -217,6 +193,10 @@
 		    //     scene.add(bird);
 		    // });
 
+		    var pipeCount = 2;
+		    var currentPipeIndex = pipeCount-1;
+		    var pipeBotArray = []
+		    var zGap = (camera.position.z - pipeBotStart.z)/pipeCount;
 		    <!-- PIPE SA BABA --!>
 		    var pipeBot = null;
 			var loader = new THREE.JSONLoader();
@@ -226,10 +206,18 @@
 		    // });
 		    <!-- no material yet --!>
 		    loader.load('./models/pipebot.json', function(geometry) {
-		        pipeBot = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial( { color: 0xdddddd, specular: 0x009900, shininess: 30, shading: THREE.FlatShading } ));
-		        pipeBot.position.set(pipeBotStart.x, pipeBotStart.y, pipeBotStart.z);
-		        scene.add(pipeBot);
+		    	for( var i = 0; i < pipeCount; i++ ){
+		    		// compute z gap
+		    		pipeBot = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial( { color: 0xffd700 , specular: 0x009900, shininess: 30, shading: THREE.FlatShading } ));
+			        pipeBot.position.set(pipeBotStart.x, pipeBotStart.y, pipeBotStart.z + (zGap*i));
+			        scene.add(pipeBot);
+			        pipeBotArray.push(pipeBot);
+			        alert();
+		    	}
 		    });
+		    pipeBot = pipeBotArray[currentPipeIndex];
+
+		    var pipeTopArray = []
 		    <!-- PIPE SA TAAS --!>
 		    var pipeTop = null;
 			var loader = new THREE.JSONLoader();
@@ -239,11 +227,16 @@
 		    // });
 		    <!-- no material yet --!>
 		    loader.load('./models/pipetop.json', function(geometry) {
-		        pipeTop = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial( { color: 0xdddddd, specular: 0x009900, shininess: 30, shading: THREE.FlatShading } ));
-		        pipeTop.position.set(pipeTopStart.x, pipeTopStart.y, pipeTopStart.z);
-		        // pipeTop.rotateY( Math.PI / 2 );
-		        scene.add(pipeTop);
+		        for( var i = 0; i < pipeCount; i++ ){
+		    		// compute z gap
+		    		pipeTop = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial( { color: 0xffd700 , specular: 0x009900, shininess: 30, shading: THREE.FlatShading } ));
+			        pipeTop.position.set(pipeTop.x, pipeTop.y, pipeTop.z + (zGap*i));
+			        scene.add(pipeTop);
+			        pipeTopArray.push(pipeTop);
+			        alert();
+		    	}
 		    });
+		    pipeTop = pipeTopArray[currentPipeIndex];
 
 		    <!-- TREES --!>
 			var loader = new THREE.JSONLoader();
@@ -271,12 +264,12 @@
 	    	}
 
 		    <!-- test --!>
-			var boxGeometry = new THREE.BoxGeometry( 1, 1, 1 );
-			var boxMaterial = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-			var cubeForReference = new THREE.Mesh( boxGeometry, boxMaterial );
-			cubeForReference.position.z= -5;
-			cubeForReference.position.x= -3;
-			scene.add( cubeForReference );
+			// var boxGeometry = new THREE.BoxGeometry( 1, 1, 1 );
+			// var boxMaterial = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+			// var cubeForReference = new THREE.Mesh( boxGeometry, boxMaterial );
+			// cubeForReference.position.z= -5;
+			// cubeForReference.position.x= -3;
+			// scene.add( cubeForReference );
             
 			<!-- LISTENER --!>
             // document.addEventListener("animate", this._onKeyUp, false);
@@ -288,10 +281,104 @@
 			var directionUp = new THREE.Vector3(0, 0.03, 0); // amount to move per frame
 			var directionDown = new THREE.Vector3(0, -0.003, 0); // amount to move per frame
 
+			<!-- LIGHTS --!>
+			// var light = new THREE.AmbientLight(0xffffff);
+   //  		scene.add(light);
+
+   			// follows bird
+   			var birdLights = [];
+			var light = new THREE.PointLight(0xffffff, 1, 20);
+			light.position.set(bird.position.x-1, bird.position.y, bird.position.z+1);
+			birdLights.push(light);
+			scene.add(light);
+			var light = new THREE.PointLight(0xffffff, 1, 20);
+			light.position.set(bird.position.x+1, bird.position.y, bird.position.z+1);
+			birdLights.push(light);
+			scene.add(light);
+
+			// night lights
+			var nightLights = [];
+			var light = new THREE.PointLight(0xffffff, 1, 10);
+			light.position.set(-8, 5, 0);
+			nightLights.push(light);
+			scene.add(light);
+			var light = new THREE.PointLight( 0xffffff, 1, 10 ); // color, intensity, distance
+			light.position.set( -15, 15, -10 );
+			nightLights.push(light);
+			scene.add(light);
+			var light = new THREE.PointLight(0xffffff, 1, 50);
+			light.position.set(-25, 25, -30);
+			nightLights.push(light);
+			scene.add(light);
+			var light = new THREE.PointLight( 0xffffff, 1, 50 ); // color, intensity, distance
+			light.position.set( 8, 5, 0 );
+			nightLights.push(light);
+			scene.add(light);
+			var light = new THREE.PointLight( 0xffffff, 1, 50 ); // color, intensity, distance
+			light.position.set( 15, 15, -10 );
+			nightLights.push(light);
+			scene.add(light);
+			var light = new THREE.PointLight(0xffffff, 1, 50);
+			light.position.set(25, 25, -30);
+			nightLights.push(light);
+			scene.add(light);
+
 			var clock = new THREE.Clock(true);
 			var deltaTime;
 			var particleSystem = createParticleSystem();
     		scene.add(particleSystem);
+    		var cloudSystem = createCloudSystem();
+    		scene.add(cloudSystem);
+
+    		function createCloudSystem() {
+			    var cloudCount = 200;
+			    
+			    /* generate multiple snowflakes */
+			    var clouds = new THREE.PlaneGeometry( 64, 64 );
+			  for ( var i = pipeBotStart.z-4000; i < camera.position.z; i++ ) {
+			  
+			    /* directions of snowflakes */
+			    var pX = Math.floor(Math.random() * (treeRange.x*3 - -(treeRange.x*3) + 1) + -(treeRange.x*3));
+			    // var pX = Math.floor(Math.random() * (treeRange.x - -treeRange.x + 1)) + -treeRange.x;
+					pY = Math.floor(Math.random() * (pipeTopStart.y+2 - (pipeTopStart.y-2))) + (pipeTopStart.y-2);
+					pZ = Math.floor(Math.random() * (treeRange.z - -camera.position.z + 1)) + -camera.position.z;
+				    cloud = new THREE.Vector3(pX, pY, pZ);
+		
+				// var axis = new THREE.Vector3( 0, 0, 1 );
+				// var angle = Math.PI / 2;
+		
+				// cloud.applyAxisAngle( axis, angle );
+
+			    clouds.vertices.push(cloud);
+			  }
+			  /* snowflake material */
+			  var cloudMaterial = new THREE.PointCloudMaterial({
+		            color:0xffffff,
+		            size: 100,	      
+		            map: THREE.ImageUtils.loadTexture("textures/cloud.png"),
+		            transparent:true,
+		            opacity:0.5,
+		            sizeAttenuation:false
+			    });
+		  		cloudMaterial.depthTest = true;
+		 		cloudMaterial.depthWrite = false;
+
+				  // create the particle system
+				  cloudSystem = new THREE.Points(clouds, cloudMaterial);
+				  return cloudSystem;
+			}
+
+			function animateClouds() {
+			  var verts = cloudSystem.geometry.vertices;
+			  for(var i = 0; i < verts.length; i++) {
+			    var vert = verts[i];
+			    if (vert.z > camera.position.z) {
+			      vert.z = Math.random() * pipeBotStart.z - camera.position.z;
+			    }
+			    vert.z = vert.z + ((pipeMovementSpeed * (pipeMovementSpeed*100/2)) * deltaTime);
+			  }
+			  cloudSystem.geometry.verticesNeedUpdate = true;
+			}
 
 			function createParticleSystem() {
 			    var particleCount = 200;
@@ -316,6 +403,8 @@
 			    blending: THREE.AdditiveBlending,
 			    transparent: true,
 			  });
+		  		particleMaterial.depthTest = true;
+		 		particleMaterial.depthWrite = false;
 
 				  // create the particle system
 				  particleSystem = new THREE.Points(particles, particleMaterial);
@@ -341,13 +430,30 @@
 		        bird.rotation.y = 180*0.0174532925;
 		        bird.rotation.z = 0;
 
-		        pipeBot.position.set(pipeBotStart.x, pipeBotStart.y, pipeBotStart.z);
-		        pipeTop.position.set(pipeTopStart.x, pipeTopStart.y, pipeTopStart.z);
+		        // reset pipes sa bot
+				for( var i = 0; i < pipeCount; i++ ){
+					pipeBot = pipeBotArray[i];
+			        pipeBot.position.set(pipeBotStart.x, pipeBotStart.y, pipeBotStart.z + (zGap*i));
+			        pipeBot.scale.set(1,1,1);
+		    	}
+
+		    	// reset pipes sa bot
+				for( var i = 0; i < pipeCount; i++ ){
+					pipeTop = pipeTopArray[i];
+			        pipeTop.position.set(pipeTopStart.x, pipeTopStart.y, pipeTopStart.z + (zGap*i));
+			        pipeTop.scale.set(1,1,1);
+		    	}
+		    	currentPipeIndex = pipeCount-1;
+		    	pipeBot = pipeBotArray[currentPipeIndex];
+		    	pipeTop = pipeTopArray[currentPipeIndex];
 
 		        camera.position.z = bird.position.z+5;
 			}
 
 			function adjustPipes(){
+
+				// pipeTop = pipeTopArray[currentPipeIndex];
+				// pipeBot = pipeBotArray[currentPipeIndex];
 
 				<!-- COMPUTE GAP BETWEEN PIPES --!>
 				// BASTA DAPAT EQUAL TO GAP NUMBER SILA
@@ -358,7 +464,7 @@
 				<!-- PIPES MANIPULATION --!>
 				
 				// check if pipe is unseen by the camera
-				if(pipeTop.position.z >= camera.position.z){
+				// if(pipeBot.position.z >= camera.position.z){
 					pipeBot.scale.set(1,pipeBotScaleFactor,1); //scale pipe to create gap
 					pipeBot.position.y += pipeBotScaleFactor*0.5; // keep pipe relative to original starting position
 					pipeBot.position.x = pipeBotStart.x;
@@ -368,12 +474,27 @@
 					pipeTop.position.y -= pipeTopScaleFactor*0.5; // keep pipe relative to original starting position
 					pipeTop.position.x = pipeTopStart.x;
 					pipeTop.position.z = pipeTopStart.z;
-				}
+
+					console.log('pipeindex: ' + currentPipeIndex);
+					// change current pipe
+					if( currentPipeIndex == 0 )
+						currentPipeIndex=pipeCount-1;
+					else currentPipeIndex--;
+					pipeBot = pipeBotArray[currentPipeIndex];
+					pipeTop = pipeTopArray[currentPipeIndex];
+				// }
 			}
 
 			function moveWorldForward(){
-				pipeBot.position.z += ((pipeMovementSpeed * (pipeMovementSpeed*100/2)) * deltaTime); // move pipe towards camera
-				pipeTop.position.z += ((pipeMovementSpeed * (pipeMovementSpeed*100/2)) * deltaTime); // move pipe towards camera
+				var movingPipeBot;
+				var movingPipeTop;
+
+				for(var i=0; i<pipeCount; i++){
+					movingPipeBot = pipeBotArray[i];
+					movingPipeTop = pipeTopArray[i];
+					movingPipeBot.position.z += ((pipeMovementSpeed * (pipeMovementSpeed*100/2)) * deltaTime); // move pipe towards camera
+					movingPipeTop.position.z += ((pipeMovementSpeed * (pipeMovementSpeed*100/2)) * deltaTime); // move pipe towards camera
+				}
 				<!-- MOVE FLOOR --!>
 				floorMaterial.map.offset.y -= ((pipeMovementSpeed * (pipeMovementSpeed*100/2)) * deltaTime)/13; // the lower the divisor the faster, originally 0.00005
 				<!-- MOVE TREES --!>
@@ -391,6 +512,7 @@
 					}
 				}
 				animateParticles();
+				animateClouds();
 			}
 
 			function applyGamePhysics(){
@@ -482,6 +604,22 @@
 			  	deltaTime = clock.getDelta();
 			  	// add some rotation to the system
 			  	particleSystem.rotation.z -= .1 * deltaTime;
+			  	var phase = THREEx.DayNight.currentPhase(sunAngle)
+			  	if(phase==='twilight' || phase==='night'){
+			  		cloudSystem.visible = false;
+					for(var i=0; i<nightLights.length; i++){
+						var light = nightLights[i];
+						light.intensity = 1;
+					}
+
+			  	}
+			  	else {
+			  		cloudSystem.visible = true;
+			  		for(var i=0; i<nightLights.length; i++){
+						var light = nightLights[i];
+						light.intensity = 0;
+					}
+			  	}
 
 			  	// day night cycle
 			  	sunAngle    += deltaTime/dayDuration * Math.PI*2
@@ -490,7 +628,7 @@
 			  	skydom.update(sunAngle);
 			  	starField.update(sunAngle);
 
-
+			  	console.log(gameStatus);
 				switch(gameStatus) {
 					case LOADING_SCREEN:  
 							decrementLoadingTime();
@@ -511,6 +649,7 @@
 
 							if(pipeBot.position.z >= camera.position.z){
 								adjustPipes();
+								console.log('fuck');
 							}
 							else moveWorldForward();
 							applyGamePhysics();
@@ -518,6 +657,10 @@
 
 							<!-- CAMERA FOLLOWS THE BIRD --!>
 							camera.position.y = bird.position.y;
+							for(var i=0; i<birdLights.length; i++){
+								var light = birdLights[i];
+								light.position.y = bird.position.y;
+							}
 
 							if(checkIfCollision()){
 								requestAnimationFrame(animateDyingBird);
@@ -528,6 +671,10 @@
 					case DYING: 
 							<!-- CAMERA FOLLOWS THE BIRD --!>
 							camera.position.y = bird.position.y;
+							for(var i=0; i<birdLights.length; i++){
+								var light = birdLights[i];
+								light.position.y = bird.position.y;
+							}
 							applyGamePhysics();
 							break;
 					case GAME_OVER: 
