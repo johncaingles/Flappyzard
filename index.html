@@ -23,7 +23,7 @@
 			var pipeMovementSpeed = 0.5; // originally 0.6
 			var pipeGap = 10; // 7.5 //the lower the bigger (3.5 was gud)
 			var birdStart = new THREE.Vector3( 0, 0, 0);
-		    var treeRange = new THREE.Vector3( 100, pipeBotStart.y, pipeBotStart.z);
+		    var treeRange = new THREE.Vector3( 120, pipeBotStart.y, pipeBotStart.z);
 			var loadingTime = 5;
 			// begining position
 			// var sunAngle = -1/6*Math.PI*2;
@@ -60,9 +60,10 @@
 			//////////////////////////////////////////////////////////////////////////////////
 			//		comment								//
 			//////////////////////////////////////////////////////////////////////////////////
-			var sunAngle = -1/6*Math.PI*2;
+			// var sunAngle = -1/6*Math.PI*2;
 			// var sunAngle = -3/6*Math.PI*2;
-			var sunAngle = Math.PI/2;
+			var sunAngle = Math.PI/2; // 90 degrees
+			var sunAngle = Math.PI*2; // 0
 			
 			//////////////////////////////////////////////////////////////////////////////////
 			//		starfield							//
@@ -475,6 +476,11 @@
 					pipeTop.position.x = pipeTopStart.x;
 					pipeTop.position.z = pipeTopStart.z;
 
+
+					<!-- restore first the pipe to original size --!>
+					pipeBot.position.y = pipeBotStart.y;
+					pipeTop.position.y = pipeTopStart.y;
+
 					console.log('pipeindex: ' + currentPipeIndex);
 					// change current pipe
 					if( currentPipeIndex == 0 )
@@ -521,6 +527,10 @@
 				bird.position.y += birdVelocity;
 				if( bird.position.y<pipeBotStart.y+0.5){
 					bird.position.y = pipeBotStart.y+0.5;
+					birdVelocity = 0;
+				} else 
+				if( bird.position.y>pipeTopStart.y){
+					bird.position.y = pipeTopStart.y-1;
 					birdVelocity = 0;
 				}
 			}
@@ -595,11 +605,6 @@
 
 				// bird.rotation.x += 0.1;
 				// bird.rotation.y += 0.1;
-
-				<!-- restore first the pipe to original size --!>
-				pipeBot.position.y = pipeBotStart.y;
-				pipeTop.position.y = pipeTopStart.y;
-
 
 			  	deltaTime = clock.getDelta();
 			  	// add some rotation to the system
